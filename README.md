@@ -14,7 +14,6 @@ tail -f /usr/local/openresty/nginx/logs/error.log
 tail -f /usr/local/openresty/nginx/logs/access.log
 
 /bin/openresty -c /usr/local/openresty/nginx/conf/nginx.conf
-
 sudo sed '/^ *#/d' /usr/local/openresty/nginx/conf/nginx.conf
 ```
 
@@ -97,7 +96,7 @@ location ~* ^(.+\.(jpg|jpeg|gif|png))_t(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp
 }
 ```
 
--- 代理图片
+- 代理图片
 
 ```
 http://127.0.0.1:1010/(代理地址URI)_c100x100.jpg
@@ -113,7 +112,7 @@ location ~* ^(.+\.(jpg|jpeg|gif|png))_c(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp
 }
 ```
 
--- 固定格式
+- 固定格式
 
 ```
 http://127.0.0.1:1010/image/img1.jpg_f100x100.jpg
