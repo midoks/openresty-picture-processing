@@ -16,7 +16,6 @@ tail -f /usr/local/openresty/nginx/logs/access.log
 /bin/openresty -c /usr/local/openresty/nginx/conf/nginx.conf
 
 sudo sed '/^ *#/d' /usr/local/openresty/nginx/conf/nginx.conf
-
 ```
 
 ### 前期准备
@@ -36,6 +35,7 @@ http://127.0.0.1:1010/image/img1.jpg_.webp
 ```
 location ~* ^(.+\.(jpg|jpeg|gif|png))_\.(jpg|jpeg|gif|png|webp)$ {
 	...
+	rewrite_by_lua_file $document_root/format.lua;
 }
 ```
 
@@ -48,18 +48,19 @@ http://127.0.0.1:1010/image/img1.jpg_q90.webp
 ```
 location ~* ^(.+\.(jpg|jpeg|gif|png))_c(\d+)x(\d+)\.(jpg|jpeg|gif|png|webp)$ {
 	...
+	rewrite_by_lua_file $document_root/quality.lua;
 }
 ```
 
 
 - 图片缩放 
 ```
-1: 	""-> 填充后保证等比缩图
-2:    _ -> 等比缩图
-3:    ! -> 非等比缩图，按给定的参数缩图(缺点：长宽比会变化)
-4:    ^ -> 裁剪后保证等比缩图 (缺点：裁剪了图片的一部分)
-5:    > -> 只缩小不放大
-6:    $ -> 限制宽度，只缩小不放大(比如网页版图片用于手机版时)
+1: 		""-> 填充后保证等比缩图
+2:    	_ -> 等比缩图
+3:    	! -> 非等比缩图，按给定的参数缩图(缺点：长宽比会变化)
+4:    	^ -> 裁剪后保证等比缩图 (缺点：裁剪了图片的一部分)
+5:    	> -> 只缩小不放大
+6:    	$ -> 限制宽度，只缩小不放大(比如网页版图片用于手机版时)
 ```
 
 ```
@@ -70,14 +71,15 @@ http://127.0.0.1:1010/image/img1.jpg_2@100x100q90.jpg
 
 ```
 location ~* ^(.+\.(jpg|jpeg|gif|png))_(\d+)@(\d+)x(\d+)\.(jpg|jpeg|gif|png|webp)$ {
-	...
+	rewrite_by_lua_file $document_root/thumb.lua;
 }
 
 location ~* ^(.+\.(jpg|jpeg|gif|png))_(\d+)@(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp)$ {
-	...
+	rewrite_by_lua_file $document_root/thumb.lua;
 }
 
 ```
+
 
 - 截图功能
 ```
@@ -87,10 +89,42 @@ http://127.0.0.1:1010/image/img1.jpg_t100x100q90.jpg
 
 ```
 location ~* ^(.+\.(jpg|jpeg|gif|png))_t(\d+)x(\d+)\.(jpg|jpeg|gif|png|webp)$
-	...
+	rewrite_by_lua_file $document_root/tclip.lua;
 }
 
 location ~* ^(.+\.(jpg|jpeg|gif|png))_t(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp)$ {
-	...
+	rewrite_by_lua_file $document_root/tclip.lua;
+}
+```
+
+-- 代理图片
+
+```
+http://127.0.0.1:1010/(代理地址URI)_c100x100.jpg
+```
+
+```
+location ~* ^(.+\.(jpg|jpeg|gif|png))_c(\d+)x(\d+)\.(jpg|jpeg|gif|png|webp)$ {
+	rewrite_by_lua_file $document_root/curl.lua;
+}
+
+location ~* ^(.+\.(jpg|jpeg|gif|png))_c(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp)$ {
+	rewrite_by_lua_file $document_root/curl.lua;
+}
+```
+
+-- 固定格式
+
+```
+http://127.0.0.1:1010/image/img1.jpg_f100x100.jpg
+```
+
+```
+location ~* ^(.+\.(jpg|jpeg|gif|png))_f(\d+)x(\d+)\.(jpg|jpeg|gif|png|webp)$ {
+	rewrite_by_lua_file $document_root/thumb_fixed.lua;
+}
+
+location ~* ^(.+\.(jpg|jpeg|gif|png))_f(\d+)x(\d+)q(\d+)\.(jpg|jpeg|gif|png|webp)$ {
+	rewrite_by_lua_file $document_root/thumb_fixed.lua;
 }
 ```
