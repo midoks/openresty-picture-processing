@@ -20,6 +20,10 @@ function _M.new(self)
     return p
 end
 
+function _M.setBin( self, path )
+	self.gm_path = path
+end
+
 --[[
 	clear cmd value
 ]]

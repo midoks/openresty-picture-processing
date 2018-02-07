@@ -19,6 +19,10 @@ function _M.new(self)
     return p
 end
 
+function _M.setBin( self, path )
+	self.path = path
+end
+
 --[[
 	clear cmd value
 ]]
