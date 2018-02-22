@@ -7,8 +7,7 @@
 
 想使用命令行方式，可以进行如下安装
 
-```bash
-cd cd tclip-1.0.0/
+```
 chmod +x ./tclip.sh 
 ./tclip.sh
 ```
@@ -18,7 +17,7 @@ chmod +x ./tclip.sh
 
 ### 二、命令行
 
-```bash
+```
 参数说明：
     -s 原图路径
     -d 裁剪后的图片保存路径
@@ -32,8 +31,8 @@ chmod +x ./tclip.sh
 ./tclip -s a.jpg -d a_dest.jpg -w 400 -h 200
 ```
 
-## 贡献者
+## 参考
 
-* jonnywang [https://github.com/jonnywang](https://github.com/jonnywang)
+* 博学无忧 [http://www.bo56.com/tclip%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA/)
 
 
