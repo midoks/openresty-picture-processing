@@ -23,6 +23,7 @@ clock_t clt;
 #define show_debug(tip,message) if(debug){ cout << tip << message << endl;}
 
 int detectFace( Mat img , string face_cascade_name){
+
 	CascadeClassifier face_cascade;
 	std::vector<Rect> faces;
     Mat img_gray;
@@ -31,7 +32,7 @@ int detectFace( Mat img , string face_cascade_name){
 	
 	start = clock();
 
-	if( !face_cascade.load( face_cascade_name ) ){ 
+	if( !face_cascade.load( face_cascade_name ) ) { 
         printf("[error] can not load classifier file！[use -H for help]\n");
         return -1; 
     }
@@ -41,27 +42,45 @@ int detectFace( Mat img , string face_cascade_name){
 
     cvtColor( img, img_gray, CV_BGR2GRAY );
     equalizeHist( img_gray, img_gray );
-    face_cascade.detectMultiScale( img_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
+    face_cascade.detectMultiScale( img_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30));//Size(10, 10)
 	face_size = faces.size();
 	
 	show_debug("detectFace:face size is ", face_size);
-	
-	if ( face_size > 0)
-	{
-		show_debug("detectFace:faces[0].y is ", faces[0].y);
-		show_debug("detectFace:faces[0].height is ", faces[0].height);
-		show_debug("detectFace:faces[0].width is ", faces[0].width);
-		show_debug("detectFace:faces[face_size -1].y is ", faces[face_size -1].y);
-		show_debug("detectFace:faces[face_size -1].height is ", faces[face_size -1].height);
-		show_debug("detectFace:faces[face_size -1].width is ", faces[face_size -1].height);
-		Y = faces[face_size -1].y - faces[face_size -1].height / 2;
-		if ( Y > img.size().height / 2 ) //fix
-		{
+
+	if ( face_size > 0 ) {
+
+		int pos_min_y = img.size().height, pos_i = face_size - 1;
+		int i = 0;
+		for(vector<Rect>::const_iterator iter = faces.begin(); iter != faces.end(); iter++)
+	    {
+	    	show_debug("detectFace_face box is :", i);
+	    	show_debug("detectFace_face box is x:", faces[i].x);
+	    	show_debug("detectFace_face box is y:", faces[i].y);
+	    	show_debug("detectFace_face box is width:", faces[i].width);
+	    	show_debug("detectFace_face box is height:", faces[i].height);
+
+	    	if (faces[i].y < pos_min_y)
+	    	{
+	    		pos_min_y = faces[i].y;
+	    		pos_i = i;
+	    	}
+	        i++;
+	    }
+
+	    show_debug("detectFace_face min y is :", pos_min_y);
+	    show_debug("detectFace_face min pos is :", pos_i);
+	    show_debug("detectFace_face min width/2 is :", faces[pos_i].height/2);
+
+	    Y = faces[pos_i].y - faces[pos_i].height/2;
+
+	    if ( Y > img.size().height / 2 ) {
 			return -1;
 		} else {
 			return Y < 0 ? 0 : Y;
 		}
-	} else {
+	}
+	//没有识别到图片
+	else {
 		return -1;
 	}
 }
@@ -270,7 +289,7 @@ int main(int argc, char** argv)
 	show_debug("start to detectFace ", "");
 	start = clock();
 
-    result = detectFace( dest_image, config_path);
+    result = detectFace( dest_image, config_path );
 
 	clt = clock() - start;
 	show_debug("detectFace cost time ", (double)clt/CLOCKS_PER_SEC);
@@ -288,6 +307,7 @@ int main(int argc, char** argv)
 		show_debug("detectCharacter Y is ", result);
 		show_debug("detectCharacter end", "");
 	}
+
 
 	result = result == -1 ? -1 : (int)((float)result / ratio);
 
@@ -312,6 +332,35 @@ int main(int argc, char** argv)
 	dest_image = Mat(tmp_size, CV_32S);
 	resize(image, dest_image, tmp_size);
 
+	//----------------Debug start----------------
+
+ //    Mat tmp_image;
+ //    std::vector<Rect> faces;
+ //    CascadeClassifier face_cascade;
+
+ //    if( !face_cascade.load( config_path ) ){ 
+ //        printf("[error] can not load classifier file！[use -H for help]\n");
+ //        return -1; 
+ //    }
+ //    cvtColor( dest_image, tmp_image, CV_BGR2GRAY );
+ //    equalizeHist( tmp_image, tmp_image );
+ //    face_cascade.detectMultiScale( tmp_image, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30));
+	// int i = 0;
+	// show_debug("detectFace:face size is ", faces.size());
+	// for(vector<Rect>::const_iterator iter=faces.begin();iter!=faces.end();iter++)
+ //    {
+ //    	show_debug("detectFace:face box is :", i);
+ //    	show_debug("detectFace:face box is x:", faces[i].x);
+ //    	show_debug("detectFace:face box is y:", faces[i].y);
+ //    	show_debug("detectFace:face box is width:", faces[i].width);
+ //    	show_debug("detectFace:face box is height:", faces[i].height);
+ //    	//画出脸部矩形
+ //        cv::rectangle(dest_image, Rect(faces[i].x,faces[i].y,faces[i].width,faces[i].height), Scalar(0,0, 255), 1, 1, 0); 
+ //        i++;
+ //    }
+    //----------------Debug end-------------------
+
+
 	show_debug("width of resize image ", dest_image.size().width);
 	show_debug("height of resize image ", dest_image.size().height);
 
@@ -321,9 +370,11 @@ int main(int argc, char** argv)
 			clip_top = -((dest_image.size().height - dest_height) / 2);
 			clip_bottom = clip_top;
 		} else {
-			if (dest_image.size().height - result >= dest_height) {
+			if ( (dest_image.size().height - result) >= dest_height) {
+
 				clip_top = -result;
 				clip_bottom = -(dest_image.size().height - result - dest_height);
+
 			} else {
 				clip_top = -(dest_image.size().height - dest_height);
 			}
@@ -337,8 +388,10 @@ int main(int argc, char** argv)
 	show_debug("clip_bottom ", clip_bottom);
 	show_debug("clip_left ", clip_left);
 	show_debug("clip_right ", clip_right);
-	dest_image.adjustROI(clip_top, clip_bottom, clip_left, clip_right); //Mat& Mat::adjustROI(int dtop, int dbottom, int dleft, int dright)
-	
+
+	//Mat& Mat::adjustROI(int dtop, int dbottom, int dleft, int dright)
+	dest_image.adjustROI(clip_top, clip_bottom, clip_left, clip_right);
+
 	if (watermark_text != "") {
 	    putText(dest_image, watermark_text , Point(10, dest_image.rows-20), CV_FONT_HERSHEY_SIMPLEX, 0.8f, CV_RGB(255,255,255), 2);
 	}
